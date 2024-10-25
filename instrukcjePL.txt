@@ -1,0 +1,37 @@
+W JavaScript zrealizuj Sapera (N x M z X bombami) - gra
+założenie: w tym projekcie wszystkie elementy tworzymy dynamicznie (nie wpisujemy ręcznie w body)
+
+grafiki dostępne - https://mendela.pl/lekcje/ap_kli/video/img.zip
+czcionka: https://fonts.googleapis.com/css?family=Henny+Penny
+
+Proszę by w formularzu:
+	- po wpisaniu czegoś innego niż liczba wartość jest usuwana po sekundzie
+	- po kliknięciu generuj sprawdza czy wszystkie wartości są wpisanie (jeśli nie wyświetl alert/box)
+
+Zadanie 1:
+	- zachowanie formularza zgodnie z poniższymi wytycznymi
+	- dynamiczne generowanie planszy odpowiedniej wielkości i stosowną ilością bomb (wraz z tablicą w kodzie przechowującą te dane)
+
+Zadanie 2.
+Dodajemy mechanikę gry. Uwagi:
+	- prawy przycisk myszki (RMB) oznacza pole (bomba/pytajnik/nic)
+	- lewy (LMB) odsłania
+	
+Pozostają do wykonania czas i rekordy - tematyka przyszłego spotkania.
+
+Zadanie 3.
+- dodaj czas
+
+W oparciu o Cookie's stwórz:
+- rokordy TOP10 (najlepsze 10 czasów) dla dowolnego trybu gry dotychczas rozegranego (szer/wys/min).
+- po ponownym wejściu na stronę poprzednie rekordy są cały czas pamiętane
+	
+	Przykładowo lista rekordów (top10 - zawsze 10 najlepszych) sortowana czasem:
+		Nick1 - 00:52
+		Nick2 - 01:10
+		Nick1 - 05:01
+		....
+	
+	i dla pozostałych trybów listy ich rekordów.
+
+- prezentacja rekordów - byle na stronie (nie w konsola) wg. swojej koncepcji

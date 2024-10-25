@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+        /*
+        function change(dys) {
+            dys.innerText = "Miazga!!!!!"
+        }
+        */
+        function init() {
+            //const el = document.getElementById("place");
+            //console.log(el);
+            /*
+                        el.onclick = (e) => {
+                            console.log("ok1", this, e.target);
+                        }
+                            */
+            /*
+                        el.onclick = function () { // te technika nadpisuje wczeniejsz zdarznie danego typu
+                            console.log("ok2", this);
+                        }
+                            */
+            /*
+const el = document.getElementById("outer");
+let jazda = function () {
+ console.log("outer");
+}
+el.addEventListener("click", jazda, false);
+el.addEventListener("click", () => console.log('aaa'), false);
+el.removeEventListener("click", jazda);
+*/
+            /// event bubbling/capturing
+            let el = document.getElementById("outer");
+            el.addEventListener("click", () => console.log('outer'), false);
+            el = document.getElementById("inner");
+            el.addEventListener("click", (e) => {
+                console.log('inner');
+                e.stopPropagation();
+            }, false);
+        }
+    </script>
+</head>
+
+<body onload="init();" oncontextmenu="console.log('RMB');event.preventDefault();">
+    <!--
+    <div onclick="console.log('lol', this);change(this);">Klik MI!!!!!</div>
+    <div onclick="console.log('lol', this);change(this);" onmouseover="this.style.backgroundColor='red';">Klik MI!!!!!
+    </div>
+    <div onclick="console.log('lol', this);change(this);">Klik MI!!!!!</div>
+-->
+    <!--   <div id="place">Go!!!!</div> -->
+    <div id="outer">
+
+        outer
+        <div id="inner">
+
+            inner
+        </div>
+    </div>
+</body>
+
+</html>

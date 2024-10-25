@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <span id="cel" data-d="12"><img />KKKK</span>
+    <script>
+        const cel = document.getElementById("cel");
+        const el = document.createElement("div");
+        el.id = "ide";
+        el.innerText = "lol";
+        el.classList.add("item");
+        //cel.append(el);
+        //cel.prepend(el);
+        //cel.after(el);
+        cel.before(el);
+        cel.onclick = function () {
+            console.log(this);
+        }
+        console.log(cel.getAttribute("data-d"));
+
+    </script>
+</body>
+
+</html>

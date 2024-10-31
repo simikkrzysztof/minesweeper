@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minesweeper</title>
-    <link rel="icon" type="image/x-icon" href="img/logo.png">
+    <link rel="icon" type="image/x-icon" href="img/logo.jpg">
     <style>
         @font-face {
   font-family: 'Henny Penny';
@@ -19,6 +19,7 @@ body{
     font-family: Henny Penny;
 
 }
+
 input{
         
         font-family: Henny Penny;
@@ -41,6 +42,23 @@ button{
     margin-left: auto;
     margin-right: auto;
     width: 300px;
+}
+
+
+.tile-clicked {
+    background-color: darkgrey;
+}
+
+.x1 {
+    color: blue;
+}
+
+.x2 {
+    color: green;
+}
+
+.x3 {
+    color: red;
 }
 
     </style>
@@ -84,6 +102,7 @@ button{
 
 
         //sprawdzenie czy wartość w komórce jest liczbą, jeśli nie jest, wyczyszczenie inputa po sekundzie (osobno dla każdego inputa, przetestować później czy da się to zoptymalizować funkcją)
+        //ODKOMENTOWAĆ na potrzeby pracy wartości ustawione na 10
         widthGenerate.addEventListener("input", function () {
             let timeout;
             setTimeout(clearInput, 1000);
@@ -113,33 +132,47 @@ button{
                 }
             }
         });
+        var minesLocation = []; // globalna tablica dla koordynatów min
 
-        buttonGenerate.addEventListener("click", function () {
+            function setMines(width, height, mines) { // przeniesiona globalnie
+                let minesLeft = mines;
+                console.log("Miny do rozstawienia:", minesLeft);
+                while (minesLeft > 0) {
+                    let r = Math.floor(Math.random() * width);
+                    let c = Math.floor(Math.random() * height);
+                    let id = r.toString() + "-" + c.toString();
 
-            //zczytanie wartości z inputów
-            let heightInput = document.getElementById("height")
-            let height = heightInput.value
-            let widthInput = document.getElementById("width")
-            let width = widthInput.value
-            let minesInput = document.getElementById("mines")
-            let mines = minesInput.value
+                    if (!minesLocation.includes(id)) {
+                        minesLocation.push(id);
+                        minesLeft -= 1;
+                    }
+                }
+                console.log("Koordynaty min:", minesLocation); // wyświetlenie min po ich ustawieniu
+            }
 
-            //wypisanie wartości do konsoli 
-            console.log(height)
-            console.log(width)
-            console.log(mines)
+            buttonGenerate.addEventListener("click", function () {
+                let height = parseInt(document.getElementById("height").value);
+                let width = parseInt(document.getElementById("width").value);
+                let mines = parseInt(document.getElementById("mines").value);
 
-        for (let i = 0; i < array.length; i++) {
-            const element = array[i];
-            
-            var board = [];
-            var rows = width;
-            var columns = height;
-            var minesCount = mines
-            var minesLocation = [];
+                // Dodawanie licznika pozostałych min tylko raz
+                if (!document.getElementById("minesLeft")) {
+                    const minesLeftDisplay = document.createElement("h2");
+                    minesLeftDisplay.id = "minesLeft";
+                    minesLeftDisplay.innerHTML = "Mines left: " + mines;
+                    mainDiv.appendChild(minesLeftDisplay);
 
-        }
+                    const boardGenerate = document.createElement("div");
+                    boardGenerate.id = "board";
+                    mainDiv.appendChild(boardGenerate);
+                }
+
+                minesLocation = []; // czyszczenie poprzednich lokalizacji min
+                setMines(width, height, mines); // wywołanie funkcji generującej miny
             });
+
+
+            
     </script>
 </body>
 </html>

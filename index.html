@@ -66,6 +66,7 @@ button{
 <body>
 
     <script>
+        let board = [];
         //generowanie głównego diva
             const mainDiv = document.createElement("div");
             mainDiv.id = "mainDiv";
@@ -149,6 +150,24 @@ button{
                 }
                 console.log("Koordynaty min:", minesLocation); // wyświetlenie min po ich ustawieniu
             }
+            function startGame(width, height, mines) {
+
+                    //generowanie divów
+                    for (let r = 0; r < width; r++) {
+                        let row = [];
+                        for (let c = 0; c < height; c++) {
+                            //<div id="0-0"></div>
+                            let tile = document.createElement("div");
+                            tile.id = r.toString() + "-" + c.toString();
+                            // tile.addEventListener("click", clickTile);
+                            mainDiv.appendChild(tile);
+                            row.push(tile);
+                        }
+                        board.push(row);
+                    }
+
+                    console.log(board);
+                }
 
             buttonGenerate.addEventListener("click", function () {
                 let height = parseInt(document.getElementById("height").value);
@@ -169,6 +188,7 @@ button{
 
                 minesLocation = []; // czyszczenie poprzednich lokalizacji min
                 setMines(width, height, mines); // wywołanie funkcji generującej miny
+                startGame(width, height, mines); //wygenerowanie tablicy z divów
             });
 
 

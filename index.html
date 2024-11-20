@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,192 +8,483 @@
     <link rel="icon" type="image/x-icon" href="img/logo.jpg">
     <style>
         @font-face {
-  font-family: 'Henny Penny';
-  font-style: normal;
-  font-weight: 400;
-  src: url(https://fonts.gstatic.com/s/hennypenny/v17/wXKvE3UZookzsxz_kjGSfPQtvXIZt9DS.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
+            font-family: 'Henny Penny';
+            src: url(https://fonts.gstatic.com/s/hennypenny/v17/wXKvE3UZookzsxz_kjGSfPQtvXIZt9DS.woff2) format('woff2');
+        }
 
+        body {
+            font-family: Henny Penny, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
 
-body{
-    font-family: Henny Penny;
+        input {
+            font-family: Henny Penny;
+            border: 1px solid black;
+            border-radius: 5px;
+            margin: 10px auto;
+        }
 
-}
+        input#nameInput {
+            width: 300px;
+            height: 30px;
+        }
 
-input{
-        
-        font-family: Henny Penny;
-        border: 1 px solid black;
-        border-radius: 5px;
-        width: 35px;
-        height: 20px;
-        margin: auto;
-        outline: none;
-}
+        button {
+            font-family: Henny Penny;
+            border: 1px solid black;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 10px auto;
+        }
 
+        #mainDiv {
+            margin: 20px auto;
+            text-align: center;
+        }
 
-button{
-    font-family: Henny Penny;
-    border: 1 px solid black;
-    border-radius: 8px;
-}
-#mainDiv{
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    width: 300px;
-}
+        #board {
+            display: grid;
+            justify-content: center;
+            margin-top: 20px;
+        }
 
+        .tile {
+            width: 35px;
+            height: 35px;
+            background-image: url('img/klepa.png');
+            background-size: cover;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.tile-clicked {
-    background-color: darkgrey;
-}
+        .tile-clicked {
+            background-color: #d4d4d4;
+            background-image: none;
+        }
 
-.x1 {
-    color: blue;
-}
+        .tile-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
 
-.x2 {
-    color: green;
-}
+        .mine {
+            background-image: url('img/bomb.png');
+        }
 
-.x3 {
-    color: red;
-}
+        .flag {
+            background-image: url('img/flaga.png');
+        }
 
+        .question {
+            background-image: url('img/pyt.png');
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 50%;
+            margin: 20px auto;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
-<body>
 
+<body>
     <script>
         let board = [];
-        //generowanie głównego diva
-            const mainDiv = document.createElement("div");
-            mainDiv.id = "mainDiv";
+        let minesLocation = [];
+        let gameOver = false;
+        let remainingBombs = 0;
+        let firstClick = true;
+        let time = 0;
+        let timerInterval;
 
-        //generowanie inputów
+        const mainDiv = document.createElement("div");
+        mainDiv.id = "mainDiv";
+
         const heightP = document.createElement("p");
-            heightP.innerHTML = "Height: "
-        const heightGenerate = document.createElement("input");
-            heightGenerate.id= "height";
-            heightP.appendChild(heightGenerate);
-            mainDiv.appendChild(heightP);
+        heightP.innerHTML = "Height: ";
+        const heightInput = document.createElement("input");
+        heightInput.id = "height";
+        heightP.appendChild(heightInput);
+        mainDiv.appendChild(heightP);
 
         const widthP = document.createElement("p");
-            widthP.innerHTML = "Width: "
-        const widthGenerate = document.createElement("input");
-            widthGenerate.id = "width";
-            widthP.appendChild(widthGenerate);
-            mainDiv.appendChild(widthP);
+        widthP.innerHTML = "Width: ";
+        const widthInput = document.createElement("input");
+        widthInput.id = "width";
+        widthP.appendChild(widthInput);
+        mainDiv.appendChild(widthP);
 
         const minesP = document.createElement("p");
-            minesP.innerHTML = "Mines: "
-        const minesGenerate = document.createElement("input");
-            minesGenerate.id = "mines";
-            minesP.appendChild(minesGenerate);
-            mainDiv.appendChild(minesP);
+        minesP.innerHTML = "Mines: ";
+        const minesInput = document.createElement("input");
+        minesInput.id = "mines";
+        minesP.appendChild(minesInput);
+        mainDiv.appendChild(minesP);
 
+        const generateButton = document.createElement("button");
+        generateButton.id = "generateButton";
+        generateButton.innerText = "Generate";
+        mainDiv.appendChild(generateButton);
 
-        const buttonGenerate = document.createElement("button");
-            buttonGenerate.type = "button"
-            buttonGenerate.innerHTML = "Generuj"
-            mainDiv.appendChild(buttonGenerate);
+        const bombCounter = document.createElement("p");
+        bombCounter.id = "bombCounter";
+        bombCounter.innerText = "Remaining Bombs: 0";
+        mainDiv.appendChild(bombCounter);
+
+        const timerDisplay = document.createElement("p");
+        timerDisplay.id = "timer";
+        timerDisplay.innerText = "Time: 0s";
+        mainDiv.appendChild(timerDisplay);
+
+        const boardDiv = document.createElement("div");
+        boardDiv.id = "board";
+        mainDiv.appendChild(boardDiv);
+
+        const nameInput = document.createElement("input");
+        nameInput.id = "nameInput";
+        nameInput.placeholder = "Enter your name";
+        nameInput.classList.add('hidden');
+        mainDiv.appendChild(nameInput);
+
+        const saveButton = document.createElement("button");
+        saveButton.innerText = "Save Record";
+        saveButton.classList.add('hidden');
+        mainDiv.appendChild(saveButton);
+
+        const leaderboard = document.createElement("table");
+        leaderboard.id = "leaderboard";
+        leaderboard.classList.add('hidden');
+        const leaderboardHeader = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        const nameHeader = document.createElement("th");
+        nameHeader.textContent = "Name";
+        const timeHeader = document.createElement("th");
+        timeHeader.textContent = "Time";
+        headerRow.appendChild(nameHeader);
+        headerRow.appendChild(timeHeader);
+        leaderboardHeader.appendChild(headerRow);
+        leaderboard.appendChild(leaderboardHeader);
+        const leaderboardBody = document.createElement("tbody");
+        leaderboard.appendChild(leaderboardBody);
+        mainDiv.appendChild(leaderboard);
 
         document.body.appendChild(mainDiv);
 
 
-        //sprawdzenie czy wartość w komórce jest liczbą, jeśli nie jest, wyczyszczenie inputa po sekundzie (osobno dla każdego inputa, przetestować później czy da się to zoptymalizować funkcją)
-        //ODKOMENTOWAĆ na potrzeby pracy wartości ustawione na 10
-        widthGenerate.addEventListener("input", function () {
-            let timeout;
-            setTimeout(clearInput, 1000);
-            function clearInput() {
-                if (isNaN(widthGenerate.value)) {
-                widthGenerate.value = "";
-                }  
-            }
 
-         });
-        heightGenerate.addEventListener("input", function () {
-                let timeout;
-                setTimeout(clearInput, 1000);
-                function clearInput() {
-                    if (isNaN(heightGenerate.value)) {
-                        heightGenerate.value = "";
-                    }
-                }
+        // Leaderboard data structure
+        const records = {};
 
-            });
-        minesGenerate.addEventListener("input", function () {
-            let timeout;
-            setTimeout(clearInput, 1000);
-            function clearInput() {
-                if (isNaN(minesGenerate.value)) {
-                    minesGenerate.value = "";
+        // Input validation functions
+
+        function clearInput(inputElement) {
+            setTimeout(function () {
+                if (isNaN(inputElement.value) || inputElement.value === "") {
+                    inputElement.value = "";
                 }
-            }
+            }, 1000); // Czeka 1 sekundę przed czyszczeniem
+        }
+
+
+        heightInput.addEventListener("input", function () {
+            clearInput(heightInput);
         });
-        var minesLocation = []; // globalna tablica dla koordynatów min
 
-            function setMines(width, height, mines) { // przeniesiona globalnie
-                let minesLeft = mines;
-                console.log("Miny do rozstawienia:", minesLeft);
-                while (minesLeft > 0) {
-                    let r = Math.floor(Math.random() * width);
-                    let c = Math.floor(Math.random() * height);
-                    let id = r.toString() + "-" + c.toString();
+        widthInput.addEventListener("input", function () {
+            clearInput(widthInput);
+        });
 
-                    if (!minesLocation.includes(id)) {
-                        minesLocation.push(id);
-                        minesLeft -= 1;
-                    }
-                }
-                console.log("Koordynaty min:", minesLocation); // wyświetlenie min po ich ustawieniu
+        minesInput.addEventListener("input", function () {
+            clearInput(minesInput);
+        });
+
+
+        generateButton.addEventListener('click', () => {
+            const width = parseInt(widthInput.value);
+            const height = parseInt(heightInput.value);
+            const mines = parseInt(minesInput.value);
+
+            // Sprawdzenie, czy wszystkie pola zostały wypełnione
+            if (isNaN(width) || isNaN(height) || isNaN(mines) || width <= 0 || height <= 0 || mines <= 0) {
+                alert("WYPEŁNIJ WSZYSTKIE INPUTY!!!");
+                return;
             }
-            function startGame(width, height, mines) {
 
-                    //generowanie divów
-                    for (let r = 0; r < width; r++) {
-                        let row = [];
-                        for (let c = 0; c < height; c++) {
-                            //<div id="0-0"></div>
-                            let tile = document.createElement("div");
-                            tile.id = r.toString() + "-" + c.toString();
-                            // tile.addEventListener("click", clickTile);
-                            mainDiv.appendChild(tile);
-                            row.push(tile);
-                        }
-                        board.push(row);
-                    }
+            if (mines >= width * height) {
+                alert("To chyba za dużo min ;)");
+                return;
+            }
 
-                    console.log(board);
+            startGame(width, height, mines);
+        });
+
+        function startGame(width, height, mines) {
+            if (timerInterval) clearInterval(timerInterval);
+            time = 0;
+            timerDisplay.innerText = "Time: 0s";
+
+            gameOver = false;
+            firstClick = true;
+            board = [];
+            minesLocation = [];
+            remainingBombs = mines;
+
+            bombCounter.innerText = `Remaining Bombs: ${mines}`;
+            boardDiv.innerHTML = '';
+            boardDiv.style.gridTemplateColumns = `repeat(${width}, 35px)`;
+
+            nameInput.classList.add('hidden');
+            saveButton.classList.add('hidden');
+            leaderboard.classList.add('hidden');
+
+            for (let r = 0; r < height; r++) {
+                let row = [];
+                for (let c = 0; c < width; c++) {
+                    const tile = document.createElement('div');
+                    tile.classList.add('tile');
+                    tile.id = `${r}-${c}`;
+
+                    tile.addEventListener('click', () => handleLeftClick(r, c, width, height, mines));
+                    tile.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        handleRightClick(tile);
+                    });
+
+                    row.push(tile);
+                    boardDiv.appendChild(tile);
                 }
+                board.push(row);
+            }
+        }
 
-            buttonGenerate.addEventListener("click", function () {
-                let height = parseInt(document.getElementById("height").value);
-                let width = parseInt(document.getElementById("width").value);
-                let mines = parseInt(document.getElementById("mines").value);
+        function handleLeftClick(row, col, width, height, mines) {
+            const tile = board[row][col];
+            if (gameOver || tile.classList.contains('tile-clicked')) return;
 
-                // Dodawanie licznika pozostałych min tylko raz
-                if (!document.getElementById("minesLeft")) {
-                    const minesLeftDisplay = document.createElement("h2");
-                    minesLeftDisplay.id = "minesLeft";
-                    minesLeftDisplay.innerHTML = "Mines left: " + mines;
-                    mainDiv.appendChild(minesLeftDisplay);
+            if (firstClick) {
+                firstClick = false;
+                placeMines(row, col, width, height, mines);
+                startTimer();
+            }
 
-                    const boardGenerate = document.createElement("div");
-                    boardGenerate.id = "board";
-                    mainDiv.appendChild(boardGenerate);
+            if (isMine(row, col)) {
+                revealMines();
+                tile.classList.add('mine');
+                gameOver = true;
+                clearInterval(timerInterval);
+                alert('Game Over!');
+            } else {
+                revealTile(row, col);
+                checkWin(width, height, mines);
+            }
+        }
+
+        function handleRightClick(tile) {
+            if (gameOver || tile.classList.contains('tile-clicked')) return;
+
+            if (tile.classList.contains('flag')) {
+                tile.classList.remove('flag');
+                tile.classList.add('question');
+                remainingBombs++;
+            } else if (tile.classList.contains('question')) {
+                tile.classList.remove('question');
+            } else {
+                tile.classList.add('flag');
+                remainingBombs--;
+            }
+
+            bombCounter.innerText = `Remaining Bombs: ${remainingBombs}`;
+        }
+
+        function placeMines(firstRow, firstCol, width, height, mines) {
+            while (minesLocation.length < mines) {
+                const row = Math.floor(Math.random() * height);
+                const col = Math.floor(Math.random() * width);
+
+                if ((row === firstRow && col === firstCol) || isMine(row, col)) continue;
+                minesLocation.push({ row, col });
+            }
+        }
+
+        function isMine(row, col) {
+            return minesLocation.some(mine => mine.row === row && mine.col === col);
+        }
+
+        function revealTile(row, col) {
+            const tile = board[row][col];
+            if (tile.classList.contains('tile-clicked')) return;
+
+            tile.classList.add('tile-clicked');
+            const minesCount = countAdjacentMines(row, col);
+
+            if (minesCount > 0) {
+                tile.innerText = minesCount;
+                tile.classList.add('tile-number');
+            } else {
+                revealAdjacentTiles(row, col);
+            }
+        }
+
+        function countAdjacentMines(row, col) {
+            let count = 0;
+            const directions = [
+                [-1, -1], [-1, 0], [-1, 1],
+                [0, -1], [0, 1],
+                [1, -1], [1, 0], [1, 1]
+            ];
+
+            directions.forEach(([dr, dc]) => {
+                const newRow = row + dr;
+                const newCol = col + dc;
+                if (isValidTile(newRow, newCol) && isMine(newRow, newCol)) {
+                    count++;
                 }
-
-                minesLocation = []; // czyszczenie poprzednich lokalizacji min
-                setMines(width, height, mines); // wywołanie funkcji generującej miny
-                startGame(width, height, mines); //wygenerowanie tablicy z divów
             });
 
+            return count;
+        }
 
-            
+        function isValidTile(row, col) {
+            return row >= 0 && row < board.length && col >= 0 && col < board[0].length;
+        }
+
+        function revealAdjacentTiles(row, col) {
+            const directions = [
+                [-1, -1], [-1, 0], [-1, 1],
+                [0, -1], [0, 1],
+                [1, -1], [1, 0], [1, 1]
+            ];
+
+            directions.forEach(([dr, dc]) => {
+                const newRow = row + dr;
+                const newCol = col + dc;
+                if (isValidTile(newRow, newCol) && !board[newRow][newCol].classList.contains('tile-clicked')) {
+                    revealTile(newRow, newCol);
+                }
+            });
+        }
+
+        function revealMines() {
+            minesLocation.forEach(({ row, col }) => {
+                board[row][col].classList.add('mine');
+            });
+        }
+
+        function checkWin(width, height, mines) {
+            let clickedTiles = 0;
+            for (let r = 0; r < board.length; r++) {
+                for (let c = 0; c < board[0].length; c++) {
+                    if (board[r][c].classList.contains('tile-clicked')) {
+                        clickedTiles++;
+                    }
+                }
+            }
+
+            if (clickedTiles === width * height - mines) {
+                gameOver = true;
+                clearInterval(timerInterval);
+                alert(`You Win! Time: ${time}s`);
+                nameInput.classList.remove('hidden');
+                saveButton.classList.remove('hidden');
+
+                saveButton.addEventListener('click', () => saveRecord(time, width, height, mines));
+            }
+        }
+
+        function saveRecord(finalTime, width, height, mines) {
+            const playerName = nameInput.value.trim();
+            if (!playerName) {
+                alert('Enter your name!');
+                return;
+            }
+
+            const gameMode = `${width}x${height}-${mines}`;
+            if (!records[gameMode]) {
+                records[gameMode] = {};
+            }
+
+            if (!records[gameMode][playerName]) {
+                records[gameMode][playerName] = [];
+            }
+
+            records[gameMode][playerName].push(finalTime);
+            records[gameMode][playerName].sort((a, b) => a - b);
+
+            if (records[gameMode][playerName].length > 10) {
+                records[gameMode][playerName] = records[gameMode][playerName].slice(0, 10);
+            }
+
+            updateLeaderboard(playerName, gameMode);
+            nameInput.value = '';
+            nameInput.classList.add('hidden');
+            saveButton.classList.add('hidden');
+        }
+
+        function updateLeaderboard(playerName, gameMode) {
+            const leaderboardBody = leaderboard.querySelector('tbody');
+            leaderboardBody.innerHTML = '';
+
+            // Add table header with correct column titles
+            const leaderboardHeader = leaderboard.querySelector('thead');
+            const headerRow = leaderboardHeader.querySelector('tr');
+            headerRow.innerHTML = ''; // Clear any previous headers
+
+            const idHeader = document.createElement("th");
+            idHeader.textContent = "ID";
+            const nameHeader = document.createElement("th");
+            nameHeader.textContent = "Name";
+            const timeHeader = document.createElement("th");
+            timeHeader.textContent = "Time";
+
+            headerRow.appendChild(idHeader);
+            headerRow.appendChild(nameHeader);
+            headerRow.appendChild(timeHeader);
+
+            if (!records[gameMode] || !records[gameMode][playerName]) return;
+
+            records[gameMode][playerName].forEach((time, index) => {
+                const row = leaderboardBody.insertRow(index);
+                const rankCell = row.insertCell(0);
+                const nameCell = row.insertCell(1);
+                const timeCell = row.insertCell(2);
+
+                rankCell.textContent = index + 1; // Index starting from 1 for rank
+                nameCell.textContent = playerName;
+                timeCell.textContent = `${time}s`;
+            });
+
+            leaderboard.classList.remove('hidden');
+        }
+
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                time++;
+                timerDisplay.innerText = `Time: ${time}s`;
+            }, 1000);
+        }
     </script>
 </body>
+
 </html>

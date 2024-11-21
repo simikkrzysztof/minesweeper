@@ -193,17 +193,17 @@
 
 
 
-        // Leaderboard data structure
+        // Leaderboard
         const records = {};
 
-        // Input validation functions
+        // Walidacja inputów
 
         function clearInput(inputElement) {
             setTimeout(function () {
                 if (isNaN(inputElement.value) || inputElement.value === "") {
                     inputElement.value = "";
                 }
-            }, 1000); // Czeka 1 sekundę przed czyszczeniem
+            }, 1000); // Wyczyszczenie inputa po sekundzie przy niepoprawnym inpucie
         }
 
 
@@ -414,10 +414,10 @@
 
         function saveRecord(finalTime, width, height, mines) {
             const playerName = nameInput.value.trim();
-            if (!playerName) {
-                alert('Enter your name!');
-                return;
-            }
+            // if (!playerName) {
+            //   alert('Enter your name!');
+            //   return;
+            // }
 
             const gameMode = `${width}x${height}-${mines}`;
             if (!records[gameMode]) {
@@ -445,10 +445,10 @@
             const leaderboardBody = leaderboard.querySelector('tbody');
             leaderboardBody.innerHTML = '';
 
-            // Add table header with correct column titles
+            //dodanie theadera
             const leaderboardHeader = leaderboard.querySelector('thead');
             const headerRow = leaderboardHeader.querySelector('tr');
-            headerRow.innerHTML = ''; // Clear any previous headers
+            headerRow.innerHTML = ''; // Wyczyszczenie starych
 
             const idHeader = document.createElement("th");
             idHeader.textContent = "ID";
@@ -469,7 +469,7 @@
                 const nameCell = row.insertCell(1);
                 const timeCell = row.insertCell(2);
 
-                rankCell.textContent = index + 1; // Index starting from 1 for rank
+                rankCell.textContent = index + 1; // index od 1 nie od 0
                 nameCell.textContent = playerName;
                 timeCell.textContent = `${time}s`;
             });

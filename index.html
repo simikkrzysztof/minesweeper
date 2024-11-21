@@ -91,7 +91,7 @@
 
         table {
             border-collapse: collapse;
-            width: 50%;
+            width: 70%;
             margin: 20px auto;
         }
 
@@ -189,11 +189,12 @@
         leaderboard.appendChild(leaderboardBody);
         mainDiv.appendChild(leaderboard);
 
+        const allLeaderboards = document.createElement("div");
+        allLeaderboards.id = "allLeaderboards";
+        mainDiv.appendChild(allLeaderboards);
+
         document.body.appendChild(mainDiv);
 
-
-
-        // Leaderboard
         const records = {};
 
         // Walidacja inputów
@@ -219,26 +220,6 @@
             clearInput(minesInput);
         });
 
-
-        generateButton.addEventListener('click', () => {
-            const width = parseInt(widthInput.value);
-            const height = parseInt(heightInput.value);
-            const mines = parseInt(minesInput.value);
-
-            // Sprawdzenie, czy wszystkie pola zostały wypełnione
-            if (isNaN(width) || isNaN(height) || isNaN(mines) || width <= 0 || height <= 0 || mines <= 0) {
-                alert("WYPEŁNIJ WSZYSTKIE INPUTY!!!");
-                return;
-            }
-
-            if (mines >= width * height) {
-                alert("To chyba za dużo min ;)");
-                return;
-            }
-
-            startGame(width, height, mines);
-        });
-
         function startGame(width, height, mines) {
             if (timerInterval) clearInterval(timerInterval);
             time = 0;
@@ -257,6 +238,7 @@
             nameInput.classList.add('hidden');
             saveButton.classList.add('hidden');
             leaderboard.classList.add('hidden');
+            allLeaderboards.innerHTML = '';
 
             for (let r = 0; r < height; r++) {
                 let row = [];
@@ -278,27 +260,99 @@
             }
         }
 
-        function handleLeftClick(row, col, width, height, mines) {
-            const tile = board[row][col];
-            if (gameOver || tile.classList.contains('tile-clicked')) return;
-
-            if (firstClick) {
-                firstClick = false;
-                placeMines(row, col, width, height, mines);
-                startTimer();
+        saveButton.addEventListener('click', () => {
+            const playerName = nameInput.value.trim();
+            if (!playerName) {
+                alert('Entetr name');
+                return;
             }
 
-            if (isMine(row, col)) {
-                revealMines();
-                tile.classList.add('mine');
-                gameOver = true;
-                clearInterval(timerInterval);
-                alert('Game Over!');
-            } else {
-                revealTile(row, col);
-                checkWin(width, height, mines);
+            const gameKey = `${board[0].length}x${board.length}-${minesLocation.length}`;
+
+            if (!records[playerName]) {
+                records[playerName] = {};
+            }
+
+            if (!records[playerName][gameKey]) {
+                records[playerName][gameKey] = [];
+            }
+
+            records[playerName][gameKey].push(time);
+            records[playerName][gameKey].sort((a, b) => a - b);
+
+            renderLeaderboard(gameKey, playerName);
+            renderAllLeaderboards(playerName);
+        });
+
+        function renderLeaderboard(gameKey, playerName) {
+            leaderboard.classList.remove('hidden');
+            const leaderboardBody = leaderboard.querySelector('tbody');
+            leaderboardBody.innerHTML = '';
+
+            const times = records[playerName]?.[gameKey] || [];
+            for (const t of times) {
+                const row = document.createElement('tr');
+                const nameCell = document.createElement('td');
+                const timeCell = document.createElement('td');
+
+                nameCell.innerText = playerName;
+                timeCell.innerText = `${t}s`;
+
+                row.appendChild(nameCell);
+                row.appendChild(timeCell);
+                leaderboardBody.appendChild(row);
             }
         }
+
+        function renderAllLeaderboards(playerName) {
+            allLeaderboards.innerHTML = '';
+
+            const userRecords = records[playerName] || {};
+            for (const [key, times] of Object.entries(userRecords)) {
+                const header = document.createElement('h3');
+                header.innerText = `Leaderboard for ${key}`;
+                allLeaderboards.appendChild(header);
+
+                const table = document.createElement('table');
+                const headerRow = document.createElement('tr');
+                const nameHeader = document.createElement('th');
+                nameHeader.innerText = 'Name';
+                const timeHeader = document.createElement('th');
+                timeHeader.innerText = 'Time';
+
+                headerRow.appendChild(nameHeader);
+                headerRow.appendChild(timeHeader);
+                table.appendChild(headerRow);
+
+                for (const t of times) {
+                    const row = document.createElement('tr');
+                    const nameCell = document.createElement('td');
+                    const timeCell = document.createElement('td');
+
+                    nameCell.innerText = playerName;
+                    timeCell.innerText = `${t}s`;
+
+                    row.appendChild(nameCell);
+                    row.appendChild(timeCell);
+                    table.appendChild(row);
+                }
+
+                allLeaderboards.appendChild(table);
+            }
+        }
+
+        generateButton.addEventListener("click", () => {
+            const width = parseInt(widthInput.value);
+            const height = parseInt(heightInput.value);
+            const mines = parseInt(minesInput.value);
+
+            if (isNaN(width) || isNaN(height) || isNaN(mines) || width <= 0 || height <= 0 || mines <= 0 || mines >= width * height) {
+                alert("Upewnij się, że podane informacje są prawidłe");
+                return;
+            }
+
+            startGame(width, height, mines);
+        });
 
         function handleRightClick(tile) {
             if (gameOver || tile.classList.contains('tile-clicked')) return;
@@ -317,172 +371,109 @@
             bombCounter.innerText = `Remaining Bombs: ${remainingBombs}`;
         }
 
-        function placeMines(firstRow, firstCol, width, height, mines) {
-            while (minesLocation.length < mines) {
-                const row = Math.floor(Math.random() * height);
-                const col = Math.floor(Math.random() * width);
+        function handleLeftClick(r, c, width, height, mines) {
+            if (gameOver) return;
 
-                if ((row === firstRow && col === firstCol) || isMine(row, col)) continue;
-                minesLocation.push({ row, col });
+            const tile = board[r][c];
+            if (tile.classList.contains('tile-clicked') || tile.classList.contains('flag')) return;
+
+            if (firstClick) {
+                placeMines(r, c, width, height, mines);
+                firstClick = false;
+
+                timerInterval = setInterval(() => {
+                    time++;
+                    timerDisplay.innerText = `Time: ${time}s`;
+                }, 1000);
+            }
+
+            if (minesLocation.includes(`${r}-${c}`)) {
+                revealMines();
+                gameOver = true;
+                clearInterval(timerInterval);
+                alert('Psiajucha, nie tym razem');
+                return;
+            }
+
+            revealTile(r, c);
+            checkWin();
+        }
+
+        function placeMines(startRow, startCol, width, height, mines) {
+            while (minesLocation.length < mines) {
+                const r = Math.floor(Math.random() * height);
+                const c = Math.floor(Math.random() * width);
+                const id = `${r}-${c}`;
+                if (!minesLocation.includes(id) && (r !== startRow || c !== startCol)) {
+                    minesLocation.push(id);
+                }
             }
         }
 
-        function isMine(row, col) {
-            return minesLocation.some(mine => mine.row === row && mine.col === col);
-        }
-
-        function revealTile(row, col) {
-            const tile = board[row][col];
-            if (tile.classList.contains('tile-clicked')) return;
+        function revealTile(r, c) {
+            if (r < 0 || r >= board.length || c < 0 || c >= board[0].length) return;
+            const tile = board[r][c];
+            if (tile.classList.contains('tile-clicked') || tile.classList.contains('flag')) return;
 
             tile.classList.add('tile-clicked');
-            const minesCount = countAdjacentMines(row, col);
 
+            const minesCount = countAdjacentMines(r, c);
             if (minesCount > 0) {
                 tile.innerText = minesCount;
                 tile.classList.add('tile-number');
             } else {
-                revealAdjacentTiles(row, col);
+                const directions = [
+                    [-1, -1], [-1, 0], [-1, 1],
+                    [0, -1], [0, 1],
+                    [1, -1], [1, 0], [1, 1],
+                ];
+
+                for (const [dr, dc] of directions) {
+                    revealTile(r + dr, c + dc);
+                }
             }
         }
 
-        function countAdjacentMines(row, col) {
+        function countAdjacentMines(r, c) {
             let count = 0;
             const directions = [
                 [-1, -1], [-1, 0], [-1, 1],
                 [0, -1], [0, 1],
-                [1, -1], [1, 0], [1, 1]
+                [1, -1], [1, 0], [1, 1],
             ];
 
-            directions.forEach(([dr, dc]) => {
-                const newRow = row + dr;
-                const newCol = col + dc;
-                if (isValidTile(newRow, newCol) && isMine(newRow, newCol)) {
-                    count++;
-                }
-            });
-
-            return count;
-        }
-
-        function isValidTile(row, col) {
-            return row >= 0 && row < board.length && col >= 0 && col < board[0].length;
-        }
-
-        function revealAdjacentTiles(row, col) {
-            const directions = [
-                [-1, -1], [-1, 0], [-1, 1],
-                [0, -1], [0, 1],
-                [1, -1], [1, 0], [1, 1]
-            ];
-
-            directions.forEach(([dr, dc]) => {
-                const newRow = row + dr;
-                const newCol = col + dc;
-                if (isValidTile(newRow, newCol) && !board[newRow][newCol].classList.contains('tile-clicked')) {
-                    revealTile(newRow, newCol);
-                }
-            });
-        }
-
-        function revealMines() {
-            minesLocation.forEach(({ row, col }) => {
-                board[row][col].classList.add('mine');
-            });
-        }
-
-        function checkWin(width, height, mines) {
-            let clickedTiles = 0;
-            for (let r = 0; r < board.length; r++) {
-                for (let c = 0; c < board[0].length; c++) {
-                    if (board[r][c].classList.contains('tile-clicked')) {
-                        clickedTiles++;
+            for (const [dr, dc] of directions) {
+                const nr = r + dr;
+                const nc = c + dc;
+                if (nr >= 0 && nr < board.length && nc >= 0 && nc < board[0].length) {
+                    if (minesLocation.includes(`${nr}-${nc}`)) {
+                        count++;
                     }
                 }
             }
 
-            if (clickedTiles === width * height - mines) {
-                gameOver = true;
+            return count;
+        }
+
+        function revealMines() {
+            for (const loc of minesLocation) {
+                const [r, c] = loc.split('-').map(Number);
+                const tile = board[r][c];
+                tile.classList.add('mine');
+            }
+        }
+
+        function checkWin() {
+            const totalTiles = board.length * board[0].length;
+            const clickedTiles = document.querySelectorAll('.tile-clicked').length;
+            const nonMineTiles = totalTiles - minesLocation.length;
+
+            if (clickedTiles === nonMineTiles) {
                 clearInterval(timerInterval);
-                alert(`You Win! Time: ${time}s`);
+                alert('Gratulacje, jesteś świetnym saperem');
                 nameInput.classList.remove('hidden');
                 saveButton.classList.remove('hidden');
-
-                saveButton.addEventListener('click', () => saveRecord(time, width, height, mines));
             }
-        }
-
-        function saveRecord(finalTime, width, height, mines) {
-            const playerName = nameInput.value.trim();
-            // if (!playerName) {
-            //   alert('Enter your name!');
-            //   return;
-            // }
-
-            const gameMode = `${width}x${height}-${mines}`;
-            if (!records[gameMode]) {
-                records[gameMode] = {};
-            }
-
-            if (!records[gameMode][playerName]) {
-                records[gameMode][playerName] = [];
-            }
-
-            records[gameMode][playerName].push(finalTime);
-            records[gameMode][playerName].sort((a, b) => a - b);
-
-            if (records[gameMode][playerName].length > 10) {
-                records[gameMode][playerName] = records[gameMode][playerName].slice(0, 10);
-            }
-
-            updateLeaderboard(playerName, gameMode);
-            nameInput.value = '';
-            nameInput.classList.add('hidden');
-            saveButton.classList.add('hidden');
-        }
-
-        function updateLeaderboard(playerName, gameMode) {
-            const leaderboardBody = leaderboard.querySelector('tbody');
-            leaderboardBody.innerHTML = '';
-
-            //dodanie theadera
-            const leaderboardHeader = leaderboard.querySelector('thead');
-            const headerRow = leaderboardHeader.querySelector('tr');
-            headerRow.innerHTML = ''; // Wyczyszczenie starych
-
-            const idHeader = document.createElement("th");
-            idHeader.textContent = "ID";
-            const nameHeader = document.createElement("th");
-            nameHeader.textContent = "Name";
-            const timeHeader = document.createElement("th");
-            timeHeader.textContent = "Time";
-
-            headerRow.appendChild(idHeader);
-            headerRow.appendChild(nameHeader);
-            headerRow.appendChild(timeHeader);
-
-            if (!records[gameMode] || !records[gameMode][playerName]) return;
-
-            records[gameMode][playerName].forEach((time, index) => {
-                const row = leaderboardBody.insertRow(index);
-                const rankCell = row.insertCell(0);
-                const nameCell = row.insertCell(1);
-                const timeCell = row.insertCell(2);
-
-                rankCell.textContent = index + 1; // index od 1 nie od 0
-                nameCell.textContent = playerName;
-                timeCell.textContent = `${time}s`;
-            });
-
-            leaderboard.classList.remove('hidden');
-        }
-
-
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                time++;
-                timerDisplay.innerText = `Time: ${time}s`;
-            }, 1000);
         }
     </script>
 </body>
